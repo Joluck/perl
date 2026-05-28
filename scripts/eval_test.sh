@@ -18,13 +18,15 @@ mkdir -p "$TASK_DIR" "$WORK_DIR"
 python modules/eval/run_eval.py \
     --stage all \
     --tasks aime2024 \
+    --pass-k 32 \
     --task-dir "$TASK_DIR" \
     --model-path "$MODEL_PATH" \
     --backend offline \
     --tp-size 1 \
-    --dp-size 1 \
-    --temperature 0.7 \
-    --max-tokens 1024 \
+    --dp-size 4 \
+    --temperature 0.6 \
+    --top-p 0.95 \
+    --max-tokens 32000 \
     --output "$WORK_DIR/step01.jsonl" \
     --inference-output "$WORK_DIR/step02.jsonl" \
     --score-output "$WORK_DIR/step03_scores.jsonl" \
