@@ -28,6 +28,7 @@ class PeftConfig:
     target_modules: List[str] = field(
         default_factory=lambda: ["q_proj", "v_proj", "k_proj", "o_proj", "up_proj", "down_proj"]
     )
+    merge_after_training: bool = False
 
 
 @dataclass

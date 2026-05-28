@@ -7,7 +7,6 @@ mkdir -p ${OUTPUT_DIR}
 
 CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     accelerate launch \
-    --main_process_port 29503 \
     --config_file recipes/trl/accelerate/ds_zero2_4gpu.yaml \
     modules/trl/run.py train \
     --config.common.seed 42 \
@@ -27,17 +26,17 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     --config.training.output_dir "${OUTPUT_DIR}" \
     --config.training.run_name "${OUTPUT_DIR}" \
     --config.training.remove_unused_columns false \
-    --config.training.gradient_accumulation_steps 8 \
+    --config.training.gradient_accumulation_steps 16 \
     --config.training.num_train_epochs 1 \
     --config.training.max_completion_length 16384 \
     --config.training.num_generations 8 \
     --config.training.warmup_ratio 0.0 \
     --config.training.max_prompt_length 512 \
     --config.training.logging_steps 1 \
-    --config.training.per_device_train_batch_size 4 \
+    --config.training.per_device_train_batch_size 2 \
     --config.training.save_strategy "steps" \
     --config.training.save_steps 64 \
-    --config.training.max_steps 1024 \
+    --config.training.max_steps 100 \
     --config.training.use_vllm true \
     --config.training.top_entropy_quantile 1.0 \
     --config.training.epsilon_high 0.28 \
@@ -47,7 +46,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     --config.training.vllm_gpu_memory_utilization 0.4 \
     --config.training.use_liger_kernel false \
     --config.training.loss_type "dapo" \
-    --config.training.report_to '["wandb"]' \
+    --config.training.report_to '["none"]' \
     --config.logging.trackio_space_id "Open-Tinker/Open-Tinker" \
     --config.logging.trackio_project "grpo-full-qwen3-4b" \
     --config.logging.wandb_project "grpo-full-qwen3-4b" \

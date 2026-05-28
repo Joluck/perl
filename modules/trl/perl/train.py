@@ -123,3 +123,12 @@ def train(
     logger.info(f"Training completed successfully")
     trainer.save_model(training_args.output_dir)
     logger.info(f"Model saved to {training_args.output_dir}")
+
+    # merge adapter into base model if requested
+    if args.peft.use_peft and args.peft.merge_after_training:
+        merge_dir = os.path.join(training_args.output_dir, "merged")
+        logger.info(f"Merging adapter into base model, saving to {merge_dir}")
+        merged_model = model.merge_and_unload()
+        merged_model.save_pretrained(merge_dir)
+        tokenizer.save_pretrained(merge_dir)
+        logger.info(f"Merged model saved to {merge_dir}")

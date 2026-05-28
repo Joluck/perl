@@ -106,3 +106,67 @@ source [your virtual env]/bin/activate
 bash scripts/openr1/dapo_full.sh # run a full RL
 bash scripts/openr1/dapo_lora.sh # run a lora RL
 ```
+
+## Merge Adapter
+
+```
+python modules/trl/perl/merge.py \
+    --base_model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
+    --checkpoint <checkpoint_path> \
+    --output <output_path> \
+    [--dtype bfloat16|float16]
+```
+
+## Evaluation
+
+Use `modules/eval/run_eval.py` to run the NanoEval pipeline.
+
+### Local offline inference (SGLang)
+
+```
+python modules/eval/run_eval.py \
+    --stage all \
+    --tasks aime2024,aime2025 \
+    --task-dir outputs/nano_eval \
+    --model-path /path/to/your/model \
+    --backend offline \
+    --tp-size 1 \
+    --dp-size 1 \
+    --output outputs/step01.jsonl \
+    --inference-output outputs/step02.jsonl \
+    --score-output outputs/step03_scores.jsonl \
+    --final-eval-output outputs/step03_metrics.jsonl
+```
+
+### API inference (online)
+
+```
+python modules/eval/run_eval.py \
+    --stage all \
+    --tasks math500 \
+    --backend online \
+    --base-url https://api.openai.com/v1 \
+    --api-key $API_KEY \
+    --model gpt-4o \
+    --output outputs/step01.jsonl \
+    --inference-output outputs/step02.jsonl \
+    --score-output outputs/step03_scores.jsonl \
+    --final-eval-output outputs/step03_metrics.jsonl
+```
+
+### Score only (existing inference results)
+
+```
+python modules/eval/run_eval.py \
+    --stage step03 \
+    --eval-input outputs/step02.jsonl \
+    --score-output outputs/step03_scores.jsonl \
+    --final-eval-output outputs/step03_metrics.jsonl
+```
+
+Key parameters:
+- `--stage`: `step01` (prepare inputs) / `step02` (inference) / `step03` (scoring) / `all`
+- `--backend`: `mock` / `offline` (local) / `online` (API) / `online_ray` (Ray concurrent)
+- `--tasks`: comma-separated task names (e.g. `aime2024,math500,gpqa_diamond,ifeval`) or `all`
+- `--pass-k`: default repeated attempts per question; supports per-task override like `aime2024@4,math500@1`
+- `--n-proc`: number of processes for reward judging in step03, default 32

@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+"""Download common reasoning benchmarks and convert to nanoeval jsonl format."""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from datasets import load_dataset
+
+
+def save_jsonl(path: Path, records: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        for r in records:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print(f"Saved {len(records)} records to {path}")
+
+
+def prepare_aime(year: int, output_dir: Path) -> None:
+    """AIME from HuggingFace datasets (HuggingFaceH4/aime_2024, aime_2025)."""
+    ds_name = f"HuggingFaceH4/aime_{year}"
+    try:
+        ds = load_dataset(ds_name, split="train")
+    except Exception as e:
+        print(f"[WARN] Failed to load {ds_name}: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        records.append({
+            "id": str(i),
+            "prompt": str(item.get("problem", "")),
+            "label": str(item.get("answer", "")),
+        })
+    save_jsonl(output_dir / f"aime{year}.jsonl", records)
+
+
+def prepare_math500(output_dir: Path) -> None:
+    try:
+        ds = load_dataset("HuggingFaceH4/MATH-500", split="test")
+    except Exception as e:
+        print(f"[WARN] Failed to load MATH-500: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        records.append({
+            "id": str(i),
+            "prompt": str(item.get("problem", "")),
+            "label": str(item.get("answer", "")),
+        })
+    save_jsonl(output_dir / "math500.jsonl", records)
+
+
+def prepare_gpqa_diamond(output_dir: Path) -> None:
+    try:
+        ds = load_dataset("google/gpqa", "gpqa_diamond", split="train", trust_remote_code=True)
+    except Exception as e:
+        print(f"[WARN] Failed to load gpqa_diamond: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        records.append({
+            "id": str(i),
+            "prompt": str(item.get("Question", "")),
+            "label": str(item.get("Correct Answer", "")),
+        })
+    save_jsonl(output_dir / "gpqa_diamond.jsonl", records)
+
+
+def prepare_ifeval(output_dir: Path) -> None:
+    try:
+        ds = load_dataset("google/ifeval", split="train")
+    except Exception as e:
+        print(f"[WARN] Failed to load ifeval: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        records.append({
+            "id": str(i),
+            "prompt": str(item.get("prompt", "")),
+            "label": "",  # IFEval uses instruction-based evaluation
+        })
+    save_jsonl(output_dir / "ifeval.jsonl", records)
+
+
+def main() -> None:
+    output_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("outputs/nano_eval")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Set HF mirror if needed
+    # os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
+    prepare_aime(2024, output_dir)
+    prepare_aime(2025, output_dir)
+    prepare_math500(output_dir)
+    prepare_gpqa_diamond(output_dir)
+    prepare_ifeval(output_dir)
+
+    print(f"\nDone. Task files are in {output_dir}")
+
+
+if __name__ == "__main__":
+    main()
