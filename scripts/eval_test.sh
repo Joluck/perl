@@ -27,6 +27,7 @@ python modules/eval/run_eval.py \
     --temperature 0.6 \
     --top-p 0.95 \
     --max-tokens 32000 \
+    --chat-template-model-path none \
     --output "$WORK_DIR/step01.jsonl" \
     --inference-output "$WORK_DIR/step02.jsonl" \
     --score-output "$WORK_DIR/step03_scores.jsonl" \

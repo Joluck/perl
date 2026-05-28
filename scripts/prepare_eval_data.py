@@ -20,6 +20,13 @@ def save_jsonl(path: Path, records: list[dict]) -> None:
     print(f"Saved {len(records)} records to {path}")
 
 
+OPENR1_MATH_PROMPT = """Solve the following math problem step by step. The last line of your response should be of the form Answer: $Answer (without quotes) where $Answer is the answer to the problem.
+
+{problem}
+
+Remember to put your answer on its own line after "Answer:".""".strip()
+
+
 def prepare_aime(year: int, output_dir: Path) -> None:
     """AIME from HuggingFace datasets (HuggingFaceH4/aime_2024, aime_2025)."""
     ds_name = f"HuggingFaceH4/aime_{year}"
@@ -31,9 +38,10 @@ def prepare_aime(year: int, output_dir: Path) -> None:
 
     records = []
     for i, item in enumerate(ds):
+        problem = str(item.get("problem", ""))
         records.append({
             "id": str(i),
-            "prompt": str(item.get("problem", "")),
+            "prompt": OPENR1_MATH_PROMPT.format(problem=problem),
             "label": str(item.get("answer", "")),
         })
     save_jsonl(output_dir / f"aime{year}.jsonl", records)
@@ -48,9 +56,10 @@ def prepare_math500(output_dir: Path) -> None:
 
     records = []
     for i, item in enumerate(ds):
+        problem = str(item.get("problem", ""))
         records.append({
             "id": str(i),
-            "prompt": str(item.get("problem", "")),
+            "prompt": OPENR1_MATH_PROMPT.format(problem=problem),
             "label": str(item.get("answer", "")),
         })
     save_jsonl(output_dir / "math500.jsonl", records)
@@ -65,9 +74,10 @@ def prepare_gpqa_diamond(output_dir: Path) -> None:
 
     records = []
     for i, item in enumerate(ds):
+        question = str(item.get("Question", ""))
         records.append({
             "id": str(i),
-            "prompt": str(item.get("Question", "")),
+            "prompt": OPENR1_MATH_PROMPT.format(problem=question),
             "label": str(item.get("Correct Answer", "")),
         })
     save_jsonl(output_dir / "gpqa_diamond.jsonl", records)
