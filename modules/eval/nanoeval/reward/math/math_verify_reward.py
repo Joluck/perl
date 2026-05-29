@@ -51,8 +51,31 @@ def extract_answer(text: str) -> str:
 
     if results:
         return results[-1]
-    else:
-        return None
+
+    # 2) Fallback: extract "Answer: ..." or "Final Answer: ..."
+    # Use a non-greedy match up to the end of line/paragraph.
+    fallback_match = re.search(
+        r"(?:\bfinal\s+answer|answer)\s*[:：]\s*(.+?)(?:\n|$)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if fallback_match:
+        ans = fallback_match.group(1).strip()
+        # 去掉 markdown 加粗符号 **
+        ans = ans.strip("*")
+        # 去掉模型从 prompt 抄来的提示后缀，如 (without quotes)
+        ans = re.sub(r"\s*\(without[^)]*\)$", "", ans, flags=re.IGNORECASE)
+        return ans
+
+    # 3) 最终 fallback: 提取最后几行中的最后一个数字
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    for line in reversed(lines[-5:]):
+        line = line.rstrip(".。,，!！?？;；")
+        nums = re.findall(r"\b\d+(?:,\d{3})*(?:\.\d+)?\b", line)
+        if nums:
+            return nums[-1].replace(",", "")
+
+    return None
 
 def grade_answer(solution_str: str, ground_truth: str) -> Tuple[float, float]:
     if parse is None or verify is None:
@@ -101,9 +124,15 @@ def math_judge(
             "pred": pred_ans,
             "pass": True
         }
-    else:
-        score, _ = grade_answer(f"${pred_ans}$", f"${label}$")
+
+    if label in pred_ans:
         return {
             "pred": pred_ans,
-            "pass": True if score == 1.0 else False
+            "pass": True
         }
+
+    score, _ = grade_answer(f"${pred_ans}$", f"${label}$")
+    return {
+        "pred": pred_ans,
+        "pass": True if score == 1.0 else False
+    }

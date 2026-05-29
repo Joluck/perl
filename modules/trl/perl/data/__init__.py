@@ -19,5 +19,7 @@ def load_dataset(dataset_name_or_path: str, example_numbers: int = None, tokeniz
         )
     elif "still" in dataset_name_lower:
         return load_still_dataset(dataset_name_or_path, example_numbers)
+    elif "math" in dataset_name_lower:
+        return load_openr1_dataset(dataset_name_or_path, example_numbers)
     else:
         raise ValueError(f"Not supported dataset: {dataset_name_or_path}")

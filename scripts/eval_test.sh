@@ -6,7 +6,10 @@ set -e
 
 MODEL_PATH="outputs/test"
 TASK_DIR="outputs/nano_eval"
-WORK_DIR="outputs/eval_test"
+WORK_DIR="outputs/eval_test_nosp"
+
+# Same system prompt used during training
+# SYSTEM_PROMPT="You are a helpful AI Assistant that provides well-reasoned and detailed responses. You first think about the reasoning process as an internal monologue and then provide the user with the answer. Respond in the following format: <think>\\n...\\n</think>\\n, then answer."
 
 mkdir -p "$TASK_DIR" "$WORK_DIR"
 

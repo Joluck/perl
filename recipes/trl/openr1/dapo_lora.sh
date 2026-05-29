@@ -5,10 +5,10 @@ LOG_FILE=${OUTPUT_DIR}/output.log
 
 mkdir -p ${OUTPUT_DIR}
 
-CUDA_VISIBLE_DEVICES=4,5,6,7 ACCELERATE_LOG_LEVEL=info \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     accelerate launch \
     --main_process_port 29501 \
-    --config_file recipes/trl/accelerate/ds_zero2_4gpu.yaml \
+    --config_file recipes/trl/accelerate/ds_zero2_8gpu.yaml \
     modules/trl/run.py train \
     --config.common.seed 42 \
     --config.common.debug false \
@@ -17,8 +17,8 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.peft.use_peft true \
     --config.peft.type "lora" \
     --config.peft.task_type "CAUSAL_LM" \
-    --config.peft.r 16 \
-    --config.peft.lora_alpha 32 \
+    --config.peft.r 32 \
+    --config.peft.lora_alpha 64 \
     --config.peft.lora_dropout 0.05 \
     --config.peft.total_step 1000 \
     --config.peft.target_modules '["q_proj","v_proj","k_proj","o_proj","up_proj","down_proj","gate_proj"]' \
@@ -34,7 +34,7 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.training.warmup_ratio 0.0 \
     --config.training.max_prompt_length 512 \
     --config.training.logging_steps 1 \
-    --config.training.per_device_train_batch_size 4 \
+    --config.training.per_device_train_batch_size 2 \
     --config.training.save_strategy "steps" \
     --config.training.save_steps 64 \
     --config.training.max_steps 1024 \
@@ -51,6 +51,6 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.logging.trackio_space_id "Open-Tinker/Open-Tinker" \
     --config.logging.trackio_project "grpo-full-qwen3-4b" \
     --config.logging.wandb_project "grpo-full-qwen3-4b" \
-    --config.dataset.dataset_name_or_path "open-r1/DAPO-Math-17k-Processed" \
+    --config.dataset.dataset_name_or_path "zhuzilin/dapo-math-17k" \
     --config.dataset.example_numbers 1000000000 \
     &> ${LOG_FILE}

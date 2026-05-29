@@ -40,12 +40,15 @@ def main() -> None:
     # ---------- step01: prepare inputs ----------
     if args.stage in ("step01", "all"):
         logging.info("[step01] Preparing eval inputs for tasks: %s", ", ".join(task_names))
+        chat_template_model_path = args.chat_template_model_path or args.model_path
+        if chat_template_model_path and str(chat_template_model_path).lower() == "none":
+            chat_template_model_path = None
         prepare_eval_input(
             task_names=task_names,
             task_dir=task_dir,
             pass_k_by_task=pass_k_by_task,
             output_path=output,
-            chat_template_model_path=args.chat_template_model_path or args.model_path,
+            chat_template_model_path=chat_template_model_path,
             system_prompt=args.system_prompt,
         )
         logging.info("[step01] Saved prepared inputs to %s", output)
