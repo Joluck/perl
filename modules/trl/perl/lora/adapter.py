@@ -15,6 +15,7 @@ def apply_lora(model, args):
         lora_alpha=args.peft.lora_alpha,
         target_modules=args.peft.target_modules,
         lora_dropout=args.peft.lora_dropout,
+        init_lora_weights=getattr(args.peft, "init_weights", True),
     )
     return None, get_peft_model(model, config)
 
