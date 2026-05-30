@@ -8,9 +8,13 @@ from datasets import load_dataset
 
 from .system_prompts import make_conversation
 
-def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
+def accuracy_reward(completions, solution: list[str], **kwargs) -> list[Optional[float]]:
     """Reward function that checks if the completion is the same as the ground truth."""
-    contents = [completion[0]["content"] for completion in completions]
+    # completions may be strings (TRL >= 0.25) or chat messages (older versions)
+    if completions and isinstance(completions[0], str):
+        contents = completions
+    else:
+        contents = [completion[0]["content"] for completion in completions]
     rewards = []
     for content, sol in zip(contents, solution, strict=True):
         gold_parsed = parse(sol)
@@ -39,7 +43,10 @@ def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str]
 
 def format_reward(completions, **kwargs):
     pattern = r"</think>"
-    completion_contents = [completion[0]["content"] for completion in completions]
+    if completions and isinstance(completions[0], str):
+        completion_contents = completions
+    else:
+        completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.search(pattern, content) for content in completion_contents]
     
     # output if mismatch (truncated)

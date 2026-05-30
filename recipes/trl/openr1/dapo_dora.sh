@@ -5,10 +5,10 @@ LOG_FILE=${OUTPUT_DIR}/output.log
 
 mkdir -p ${OUTPUT_DIR}
 
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 ACCELERATE_LOG_LEVEL=info \
+CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     accelerate launch \
     --main_process_port 29501 \
-    --config_file recipes/trl/accelerate/ds_zero2_8gpu.yaml \
+    --config_file recipes/trl/accelerate/ds_zero2_4gpu.yaml \
     modules/trl/run.py train \
     --config.common.seed 42 \
     --config.common.debug false \
@@ -27,7 +27,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.training.output_dir "${OUTPUT_DIR}" \
     --config.training.run_name "${OUTPUT_DIR}" \
     --config.training.remove_unused_columns false \
-    --config.training.gradient_accumulation_steps 8 \
+    --config.training.gradient_accumulation_steps 16 \
     --config.training.num_train_epochs 1 \
     --config.training.max_completion_length 16384 \
     --config.training.num_generations 8 \
