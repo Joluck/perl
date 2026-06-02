@@ -15,6 +15,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     --config.model.model_name_or_path "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" \
     --config.model.dtype "bfloat16" \
     --config.peft.use_peft true \
+    --config.peft.init_weights "blockii" \
     --config.peft.type "dora" \
     --config.peft.task_type "CAUSAL_LM" \
     --config.peft.r 32 \
@@ -44,7 +45,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     --config.training.lr_scheduler_type "constant" \
     --config.training.lr_scheduler_kwargs.min_lr_rate 0.1 \
     --config.training.vllm_mode "colocate" \
-    --config.training.vllm_gpu_memory_utilization 0.4 \
+    --config.training.vllm_gpu_memory_utilization 0.3 \
     --config.training.use_liger_kernel false \
     --config.training.loss_type "dapo" \
     --config.training.report_to '["wandb"]' \
