@@ -99,9 +99,9 @@ def train(
         logger.info(f"Lora configured successfully")
 
     # 4.Training configuration
-    training_args = GRPOConfig(
-        **vars(args.training),
-    )
+    training_kwargs = vars(args.training).copy()
+    training_kwargs.pop("max_prompt_length", None)
+    training_args = GRPOConfig(**training_kwargs)
 
     # 5.Train
     logger.info(f"Training model with GRPO")
