@@ -20,21 +20,35 @@ def save_jsonl(path: Path, records: list[dict]) -> None:
     print(f"Saved {len(records)} records to {path}")
 
 
-OPENR1_MATH_PROMPT = """Solve the following math problem step by step. The last line of your response should be of the form Answer: $Answer (without quotes) where $Answer is the answer to the problem.
+# OPENR1_MATH_PROMPT = """Solve the following math problem step by step. The last line of your response should be of the form Answer: $Answer (without quotes) where $Answer is the answer to the problem.
+
+# {problem}
+
+# Remember to put your answer on its own line after "Answer:".""".strip()
+OPENR1_MATH_PROMPT = """Solve the following math problem step by step. The last line of your response should be of the form Answer: \\boxed{{$Answer}} where $Answer is the answer to the problem.
 
 {problem}
 
 Remember to put your answer on its own line after "Answer:".""".strip()
 
-
 def prepare_aime(year: int, output_dir: Path) -> None:
-    """AIME from HuggingFace datasets (HuggingFaceH4/aime_2024, aime_2025)."""
+    """AIME from HuggingFace datasets."""
+    # Try primary source first
     ds_name = f"HuggingFaceH4/aime_{year}"
     try:
         ds = load_dataset(ds_name, split="train")
-    except Exception as e:
-        print(f"[WARN] Failed to load {ds_name}: {e}")
-        return
+    except Exception:
+        # Fallback to alternative source
+        if year == 2025:
+            ds_name = "MathArena/aime_2025"
+            try:
+                ds = load_dataset(ds_name, split="train")
+            except Exception as e:
+                print(f"[WARN] Failed to load {ds_name}: {e}")
+                return
+        else:
+            print(f"[WARN] Failed to load {ds_name}")
+            return
 
     records = []
     for i, item in enumerate(ds):
@@ -45,6 +59,26 @@ def prepare_aime(year: int, output_dir: Path) -> None:
             "label": str(item.get("answer", "")),
         })
     save_jsonl(output_dir / f"aime{year}.jsonl", records)
+
+
+def prepare_amc2023(output_dir: Path) -> None:
+    """AMC 2023 from math-ai/amc23."""
+    ds_name = "math-ai/amc23"
+    try:
+        ds = load_dataset(ds_name, split="test")
+    except Exception as e:
+        print(f"[WARN] Failed to load {ds_name}: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        problem = str(item.get("question", ""))
+        records.append({
+            "id": str(i),
+            "prompt": OPENR1_MATH_PROMPT.format(problem=problem),
+            "label": str(item.get("answer", "")),
+        })
+    save_jsonl(output_dir / "amc2023.jsonl", records)
 
 
 def prepare_math500(output_dir: Path) -> None:
@@ -63,6 +97,46 @@ def prepare_math500(output_dir: Path) -> None:
             "label": str(item.get("answer", "")),
         })
     save_jsonl(output_dir / "math500.jsonl", records)
+
+
+def prepare_hmmt2025(output_dir: Path) -> None:
+    """HMMT 2025 from MathArena (feb + nov merged)."""
+    records = []
+    for ds_name in ["MathArena/hmmt_feb_2025", "MathArena/hmmt_nov_2025"]:
+        try:
+            ds = load_dataset(ds_name, split="train")
+        except Exception as e:
+            print(f"[WARN] Failed to load {ds_name}: {e}")
+            continue
+        for item in ds:
+            problem = str(item.get("problem", ""))
+            records.append({
+                "id": str(len(records)),
+                "prompt": OPENR1_MATH_PROMPT.format(problem=problem),
+                "label": str(item.get("answer", "")),
+            })
+    if records:
+        save_jsonl(output_dir / "hmmt2025.jsonl", records)
+
+
+def prepare_minerva(output_dir: Path) -> None:
+    """Minerva Math from math-ai/minervamath."""
+    ds_name = "math-ai/minervamath"
+    try:
+        ds = load_dataset(ds_name, split="test")
+    except Exception as e:
+        print(f"[WARN] Failed to load {ds_name}: {e}")
+        return
+
+    records = []
+    for i, item in enumerate(ds):
+        question = str(item.get("question", ""))
+        records.append({
+            "id": str(i),
+            "prompt": OPENR1_MATH_PROMPT.format(problem=question),
+            "label": str(item.get("answer", "")),
+        })
+    save_jsonl(output_dir / "minerva.jsonl", records)
 
 
 def prepare_gpqa_diamond(output_dir: Path) -> None:
@@ -109,6 +183,9 @@ def main() -> None:
 
     prepare_aime(2024, output_dir)
     prepare_aime(2025, output_dir)
+    prepare_amc2023(output_dir)
+    prepare_hmmt2025(output_dir)
+    prepare_minerva(output_dir)
     prepare_math500(output_dir)
     prepare_gpqa_diamond(output_dir)
     prepare_ifeval(output_dir)

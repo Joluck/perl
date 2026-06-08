@@ -12,7 +12,7 @@ mkdir -p "${TASK_DIR}" "${WORK_DIR}"
 
 python modules/eval/run_eval.py \
     --stage all \
-    --tasks aime2024@32,aime2025@32,amc2023@32,math500@4,minerva@4,hmmt2025@32 \
+    --tasks aime2024@32,aime2025@32,amc2023@32,hmmt2025@32，math500@4,minerva@4 \
     --task-dir "${TASK_DIR}" \
     --model-path "${MODEL_PATH}" \
     --backend offline \

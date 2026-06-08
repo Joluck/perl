@@ -41,6 +41,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info \
     --config.training.max_steps 1024 \
     --config.training.use_vllm true \
     --config.training.top_entropy_quantile 1.0 \
+    --config.training.temperature 0.6 \
+    --config.training.top_p 0.95 \
     --config.training.epsilon_high 0.28 \
     --config.training.lr_scheduler_type "constant" \
     --config.training.lr_scheduler_kwargs.min_lr_rate 0.1 \

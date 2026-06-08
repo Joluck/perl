@@ -24,7 +24,7 @@ def fuzzy_jobs(
         logger.info(f"Output directory {args.training.output_dir} already exists, using it")
     set_seed(args.common.seed)
 
-    if args.common.debug:
+    if args.common.debug or not is_main_process:
         args.training.report_to = []
 
     # only initialize for rank 0 when process group is available
@@ -119,6 +119,12 @@ def train(
     resume_checkpoint = args.training.resume_from_checkpoint
     if resume_checkpoint == "true":
         resume_checkpoint = True
+    if resume_checkpoint is True:
+        from transformers.trainer_utils import get_last_checkpoint
+        last_ckpt = get_last_checkpoint(training_args.output_dir)
+        if last_ckpt is None:
+            logger.info(f"No checkpoint found in {training_args.output_dir}, starting from scratch.")
+            resume_checkpoint = None
     trainer.train(resume_from_checkpoint=resume_checkpoint)
     logger.info(f"Training completed successfully")
     trainer.save_model(training_args.output_dir)

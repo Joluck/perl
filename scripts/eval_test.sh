@@ -4,12 +4,9 @@
 
 set -e
 
-MODEL_PATH="outputs/test"
-TASK_DIR="outputs/nano_eval"
-WORK_DIR="outputs/eval_test_nosp"
-
-# Same system prompt used during training
-# SYSTEM_PROMPT="You are a helpful AI Assistant that provides well-reasoned and detailed responses. You first think about the reasoning process as an internal monologue and then provide the user with the answer. Respond in the following format: <think>\\n...\\n</think>\\n, then answer."
+MODEL_PATH="/home/rwkv/jl/outmodel/lora-merge"
+TASK_DIR="eval/data"
+WORK_DIR="eval/lora-0.05"
 
 mkdir -p "$TASK_DIR" "$WORK_DIR"
 
@@ -17,18 +14,16 @@ mkdir -p "$TASK_DIR" "$WORK_DIR"
 # Supported tasks: aime2024, aime2025, aime2026, beyond_aime, amc2023,
 #   math500, minerva, hmmt2025, gpqa_diamond, mmlu, mmlu_pro, mmlu_prox,
 #   ceval, ifeval, ifbench
-
+#aime2024,aime2025,amc2023,hmmt2025
 python modules/eval/run_eval.py \
     --stage all \
-    --tasks aime2024 \
-    --pass-k 32 \
+    --tasks aime2024@32,aime2025@32,amc2023@32,hmmt2025@32,math500@4,minerva@4 \
     --task-dir "$TASK_DIR" \
     --model-path "$MODEL_PATH" \
     --backend offline \
     --tp-size 1 \
     --dp-size 4 \
-    --temperature 0.6 \
-    --top-p 0.95 \
+    --temperature 1 \
     --max-tokens 32000 \
     --chat-template-model-path none \
     --output "$WORK_DIR/step01.jsonl" \
@@ -38,3 +33,5 @@ python modules/eval/run_eval.py \
     --n-proc 32
 
 echo "Evaluation complete. Metrics saved to $WORK_DIR/step03_metrics.jsonl"
+
+#    --top-p 0.95 \

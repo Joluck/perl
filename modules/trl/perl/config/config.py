@@ -63,6 +63,8 @@ class TrainingConfig:
     warmup_ratio: float = 0.0
     per_device_train_batch_size: int = 1
     top_entropy_quantile: float = 0.2
+    temperature: float = 1.0
+    top_p: float = 1.0
 
 @dataclass
 class LoggingConfig:
