@@ -24,13 +24,13 @@ def fuzzy_jobs(
         logger.info(f"Output directory {args.training.output_dir} already exists, using it")
     set_seed(args.common.seed)
 
-    if args.common.debug or not is_main_process:
-        args.training.report_to = []
-
     # only initialize for rank 0 when process group is available
     is_main_process = True
     if torch.distributed.is_available() and torch.distributed.is_initialized():
         is_main_process = torch.distributed.get_rank() == 0
+
+    if args.common.debug or not is_main_process:
+        args.training.report_to = []
 
     if is_main_process:
         if "trackio" in args.training.report_to:
