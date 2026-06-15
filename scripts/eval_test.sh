@@ -2,11 +2,15 @@
 # Evaluate the merged model at outputs/test
 # Usage: bash scripts/eval_test.sh
 
-set -e
-
-MODEL_PATH="/home/rwkv/jl/outmodel/lora-merge"
+MODEL_PATH="/home/rwkv/jl/outmodel/bii1e5-merge"
 TASK_DIR="eval/data"
-WORK_DIR="eval/lora-0.05"
+WORK_DIR="eval/rl/bii1e5"
+
+python modules/trl/perl/merge.py \
+    --base_model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
+    --checkpoint /home/rwkv/jl/outmodel/rl/bii1e5 \
+    --output $MODEL_PATH
+set -e
 
 mkdir -p "$TASK_DIR" "$WORK_DIR"
 

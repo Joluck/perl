@@ -1,5 +1,5 @@
 unset WANDB_DISABLED
-OUTPUT_DIR=outputs/grpo_lora_qwen2_5_3b_$(date +%Y%m%d_%H%M%S)
+OUTPUT_DIR=outputs/dora_$(date +%Y%m%d_%H%M%S)
 # OUTPUT_DIR=outputs/debug
 LOG_FILE=${OUTPUT_DIR}/output.log
 
@@ -15,7 +15,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.model.model_name_or_path "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B" \
     --config.model.dtype "bfloat16" \
     --config.peft.use_peft true \
-    --config.peft.type "lora" \
+    --config.peft.type "dora" \
     --config.peft.task_type "CAUSAL_LM" \
     --config.peft.r 32 \
     --config.peft.lora_alpha 64 \
@@ -27,22 +27,21 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 ACCELERATE_LOG_LEVEL=info \
     --config.training.output_dir "${OUTPUT_DIR}" \
     --config.training.run_name "${OUTPUT_DIR}" \
     --config.training.remove_unused_columns false \
-    --config.training.gradient_accumulation_steps 8 \
+    --config.training.gradient_accumulation_steps 4 \
     --config.training.num_train_epochs 1 \
     --config.training.max_completion_length 16384 \
     --config.training.num_generations 8 \
     --config.training.warmup_ratio 0.0 \
     --config.training.max_prompt_length 512 \
     --config.training.logging_steps 1 \
-    --config.training.per_device_train_batch_size 2 \
+    --config.training.per_device_train_batch_size 4 \
     --config.training.save_strategy "steps" \
     --config.training.save_steps 64 \
     --config.training.max_steps 1024 \
     --config.training.use_vllm true \
     --config.training.top_entropy_quantile 1.0 \
     --config.training.epsilon_high 0.28 \
-    --config.training.lr_scheduler_type "constant" \
-    --config.training.lr_scheduler_kwargs.min_lr_rate 0.1 \
+    --config.training.lr_scheduler_type "cosine" \
     --config.training.vllm_mode "colocate" \
     --config.training.vllm_gpu_memory_utilization 0.4 \
     --config.training.use_liger_kernel false \
